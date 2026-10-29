@@ -24,9 +24,9 @@ Una fila por cada prueba que falló por un bug **del producto**. Enlacen el bug 
 
 | Prueba | Veredicto (producto / prueba / inestable / entorno) | Cómo lo comprobamos | Qué hicimos |
 |---|---|---|---|
-| H1 · el catálogo tiene 6 productos | | | |
-| H2 · el IVA de 2 mochilas con DESC20… | | | |
-| H3 · agregar un cuaderno justo después de cargar | | | |
+| H1 · el catálogo tiene 6 productos | La prueba estaba con datos erroneos | Corriendo y analizando el códgo | Cambiar algunas cosas de código y volverlo a correr |
+| H2 · el IVA de 2 mochilas con DESC20… | La prueba estaba con datos erroneos | Corriendo y analizando el códgo | Cambiar algunas cosas de código y volverlo a correr |
+| H3 · agregar un cuaderno justo después de cargar | La prueba estaba con datos erroneos | Corriendo y analizando el códgo | Cambiar algunas cosas de código y volverlo a correr |
 
 ## 4. Medidas
 
