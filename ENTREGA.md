@@ -1,6 +1,6 @@
 # Entrega · Laboratorio 3.1 · Introducción a la automatización de pruebas
 
-**Equipo:** `equipo-N` · **Integrantes:** _nombres_ · **Repositorio:** _enlace a este repositorio_
+**Equipo:** `Estoy solo` · **Integrantes:** Jua José Rodriguez Gonzalez · **Repositorio:** [text](https://github.com/juanrodriguezle-sketch/Automatizaci-n)
 
 > Respondan aquí, en este archivo, y háganle commit. Sean breves y concretos: una frase buena vale más que un párrafo.
 
