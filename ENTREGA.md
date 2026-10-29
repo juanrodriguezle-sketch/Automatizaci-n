@@ -12,6 +12,27 @@ Elijan **mínimo 10 criterios de aceptación** de los que automatizaron (o desca
 |---|---|---|
 | _US-04 · CA2_ | Sí / No / Más adelante | _…_ |
 
+RESPUESTA 
+
+US-01 · CA1 — Ver los 8 productos del catálogo/	Sí	/Es una prueba repetitiva que se ejecuta después de cada cambio. Existe el riesgo de que no se carguen todos los productos y es fácil comprobar la cantidad automáticamente.
+
+US-02 · CA1 — Actualizar el stock al agregar productos/	Sí	/Se ejecuta frecuentemente y evita errores en las unidades disponibles. Es estable y permite comparar automáticamente el stock inicial con el resultado esperado.
+
+US-03 · CA2 — Validar cantidades vacías, cero o negativas/	Sí	/Es una validación repetitiva que evita cantidades incorrectas. Se pueden probar fácilmente diferentes valores de entrada y comprobar el resultado esperado.
+
+US-04 · CA2 — Impedir agregar más unidades que el stock/	Sí	/Tiene un riesgo alto porque puede generar pedidos que no se pueden cumplir. Es fácil automatizar la prueba con un stock conocido y verificar que el sistema rechace el exceso.
+
+US-05 · CA2 — Impedir aumentar la cantidad por encima del stock/	Sí	/Es una prueba frecuente del carrito. Evita inconsistencias en las existencias y permite comprobar automáticamente que la cantidad no cambie cuando alcanza el límite.
+
+US-07 · CA2 — Mostrar el carrito vacío y total de $0/	Sí	/Es una función fácil de verificar y se puede repetir en cada ejecución. Reduce el riesgo de mostrar cobros incorrectos cuando se elimina el último producto.
+
+US-09 · CA1 — Aplicar el descuento DESC10 del 10 %/	Sí	/Los cálculos se repiten en muchas compras y un error afecta el dinero que paga el cliente. Es estable y permite comparar el descuento calculado con el valor esperado
+
+US-11 · CA1 — Calcular el IVA del 19 % sin descuento/	Sí	/Es una operación matemática repetitiva y de riesgo alto por su efecto en el precio final. Se puede verificar automáticamente comparando el IVA calculado con el 19 % del subtotal.
+
+US-14 · CA3 — Rechazar nombres que solo contienen números o símbolos/	Sí	/Es una validación frecuente de los datos del cliente. Evita información incorrecta y resulta fácil probar diferentes entradas para verificar que el sistema las rechace.
+
+US-15 · CA4 — Rechazar correos sin arroba, dominio o con espacios/	Sí	/Se puede ejecutar con muchos ejemplos de correos válidos e inválidos. Reduce errores en los datos de contacto y es fácil comparar los resultados con las reglas definidas.
 ## 2. Bugs que nuestra suite detecta
 
 Una fila por cada prueba que falló por un bug **del producto**. Enlacen el bug con su clave de Jira y agreguen en Jira un comentario con el nombre de la prueba que lo detecta.
