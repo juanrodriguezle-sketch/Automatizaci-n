@@ -56,6 +56,16 @@ Una fila por cada prueba que falló por un bug **del producto**. Enlacen el bug 
 - Tiempo estimado de ejecutar **a mano** esos mismos casos: **\_\_ min**
 - Con esos números, ¿en cuántas ejecuciones se paga la automatización? (inversión ÷ ahorro por ejecución): **\_\_**
 
+
+RESPUESTA 
+
+MEDIDAS
+
+Casos de prueba de nuestro plan en Jira: 7; automatizados en este laboratorio: 7 (100 %).
+Tiempo que nos tomó escribir las pruebas automatizadas: 60 min; tiempo de ejecutar toda la suite: 15 s.
+Tiempo estimado de ejecutar a mano esos mismos casos: 7 min.
+¿EN cuántas ejecuciones se paga la automatización?: aproximadamente 9 ejecuciones.
+
 ## 5. Reflexión (máximo 5 líneas cada una)
 
 1. ¿Qué casos de nuestro plan **no** automatizaríamos y por qué?
@@ -63,3 +73,26 @@ Una fila por cada prueba que falló por un bug **del producto**. Enlacen el bug 
 3. Una prueba roja nuestra que **no** era un bug del producto: ¿cómo nos dimos cuenta?
 4. ¿Qué bug o riesgo **no** habría encontrado la automatización por sí sola?
 5. ¿Qué haríamos distinto en un proyecto real?
+
+
+REFLEXION 
+
+1. ¿Qué casos de nuestro plan no automatizaríamos y por qué?
+
+No automatizaríamos inicialmente las pruebas visuales, la facilidad de uso y la apariencia de la tienda. Estas pruebas requieren observación humana y permiten identificar problemas de diseño que una prueba automática podría pasar por alto.
+
+2. Si la tienda cambia el HTML de un botón, ¿qué parte de nuestro código se rompe y cuál no? ¿Qué aportó el Page Object?
+
+Se puede romper el localizador del botón si cambia su HTML. La lógica de la prueba no debería cambiar si se utiliza un Page Object, porque los localizadores y las acciones están centralizados en una clase independiente.
+
+3. Una prueba roja muestra que no era un bug del producto: ¿cómo nos dimos cuenta?
+
+Revisamos el mensaje de error, los pasos ejecutados y el resultado esperado. Después comprobamos manualmente la funcionalidad y encontramos que el problema estaba en la prueba automatizada, no en el producto.
+
+4. ¿Qué bug o riesgo no habría encontrado la automatización por sí sola?
+
+Podría no detectar problemas de usabilidad, colores difíciles de distinguir, textos confusos o una experiencia de compra poco intuitiva. Para encontrarlos, necesitamos pruebas manuales y evaluación de usuarios.
+
+5. ¿Qué haríamos distinto en un proyecto real?
+
+Definiríamos los casos prioritarios según el riesgo, usaríamos datos de prueba controlados y ejecutaríamos las pruebas automáticamente con cada cambio del código. También integraríamos las pruebas en un proceso de integración continua y mantendríamos los casos actualizados.
