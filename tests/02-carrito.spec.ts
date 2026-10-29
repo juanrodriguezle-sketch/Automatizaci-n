@@ -2,203 +2,186 @@ import { test, expect } from "@playwright/test";
 import { TiendaPage } from "../pages/TiendaPage";
 
 /**
- * BLOQUE CARRITO · US-04 a US-07.
- *
- * Cómo se trabaja este archivo:
- *  - La primera prueba ya está resuelta (EJEMPLO GUIADO).
- *  - Las demás están "pendientes": traen un test.fixme(...) que las salta. Para activar una, escriban su cuerpo
- *    y BORREN esa línea. Las pistas están en los comentarios.
- *  - "Nivel" va de 1 (fácil) a 3 (reto). "CAZABUGS" = el criterio probablemente destapa un bug de la tienda.
- *  - Los localizadores de la tienda están en el "Mapa de la tienda" de la guía del laboratorio.
+ * BLOQUE DESCUENTOS E IMPUESTOS · US-09 a US-12.
+ * Mismas reglas que en 02-carrito.spec.ts: borren el test.fixme(...) cuando implementen la prueba.
+ * Valores útiles (producto: Mochila escolar, $ 65.000): DESC10 → descuento $ 6.500 · DESC20 → $ 13.000.
  */
 
-test.describe("US-04 · Agregar productos sin superar el stock", () => {
-  // ─────────────── EJEMPLO GUIADO (resuelto) ───────────────
-  test("CA1: se pueden agregar 15 cuadernos (stock 15)", async ({ page }) => {
-    // ARRANGE: abrir la tienda
+test.describe("US-09 · Aplicar un código de descuento", () => {
+  test("CA1: DESC10 descuenta el 10% del subtotal", async ({ page }) => {
+    // ← borren esta línea para ejecutarla
     await page.goto("/");
-
-    // ACT: ubicar la tarjeta del cuaderno, escribir 15 en su cantidad y presionar "Agregar"
     const tarjeta = page.locator(".rounded-lg").filter({
-      has: page.getByRole("heading", {
-        name: "Cuaderno universitario",
-        level: 3,
-      }),
-    });
-    await tarjeta.getByRole("spinbutton").fill("15");
-    await tarjeta.getByRole("button", { name: "Agregar" }).click();
-
-    // ASSERT: en el carrito (la tarjeta con el encabezado "Carrito") aparece el cuaderno con cantidad 15
-    const carrito = page
-      .locator(".rounded-lg")
-      .filter({ has: page.getByRole("heading", { name: "Carrito" }) });
-    const linea = carrito
-      .getByRole("listitem")
-      .filter({ hasText: "Cuaderno universitario" });
-    await expect(linea.locator("span")).toHaveText("15");
-  });
-
-  // ─────────────── PENDIENTES ───────────────
-  test("CA2: no deja agregar 7 mochilas de una vez (stock 6) y avisa", async ({
-    page,
-  }) => {
-    // test.fixme(true, "Pendiente de automatizar"); // ← borren esta línea cuando la implementen
-    await page.goto("/");
-
-    let aviso = "";
-    page.once("dialog", async (dialogo) => {
-      aviso = dialogo.message();
-      await dialogo.accept();
-    });
-    const tarjeta = page.locator(".rounded-lg").filter({
-      has: page.getByRole("heading", { name: "mochila", level: 3 }),
-    });
-    await tarjeta.getByRole("spinbutton").fill("7");
-    await tarjeta.getByRole("button", { name: "Agregar" }).click();
-    await expect(aviso).toContain("Solo hay 6 unidades");
-
-    // Nivel 2.
-    // Pista: la tienda avisa con un alert() del navegador, que BLOQUEA la página hasta que se atiende.
-    //   Registren el manejador ANTES del clic:
-    //     page.once('dialog', async (dialogo) => { /* guardar dialogo.message() */ await dialogo.accept(); });
-    // Verifiquen (1) que el texto del aviso menciona "Solo hay 6 unidades" y (2) que el carrito sigue vacío.
-  });
-
-  test("CA3: 4 + 4 mochilas supera el stock (6) y debe rechazarse", async ({
-    page,
-  }) => {
-    test.fail(
-      true,
-      "BUG · El sistema agrega de igual manera y no muestra mensaje",
-    );
-    // test.fixme(true, "Pendiente de automatizar");
-    await page.goto("/");
-
-    let aviso = "";
-    page.once("dialog", async (dialogo) => {
-      aviso = dialogo.message();
-      await dialogo.accept();
-    });
-
-    const tarjeta = page.locator(".rounded-lg").filter({
-      has: page.getByRole("heading", { name: "mochila", level: 3 }),
+      has: page.getByRole("heading", { name: "Mochila escolar", level: 3 }),
     });
     const carrito = page
       .locator(".rounded-lg")
       .filter({ has: page.getByRole("heading", { name: "Carrito" }) });
-    const linea = carrito.getByRole("listitem").filter({ hasText: "mochila" });
-
-    await tarjeta.getByRole("spinbutton").fill("4");
+    await tarjeta.getByRole("spinbutton").fill("1");
     await tarjeta.getByRole("button", { name: "Agregar" }).click();
-    await tarjeta.getByRole("button", { name: "Agregar" }).click();
-
-    await expect(aviso).toContain("Solo hay 6 unidades");
-    await expect(linea.locator("span")).toHaveText("4");
+    let subtotal = await carrito
+      .locator('dt:text-is("Subtotal") + dd')
+      .textContent();
+    await page.getByPlaceholder("Código de descuento").fill("DESC10");
+    await page.getByRole("button", { name: "Aplicar" }).click();
+    const total = Number(subtotal?.replace(/\D/g, ""));
+    let valor = total * 0.1;
+    const totalValor = valor.toLocaleString("es-CO");
+    await expect(
+      carrito.locator('dt:has-text("Descuento ") + dd'),
+    ).toContainText(totalValor);
   });
+
+  const variantes = [
+    { data: "desc10", bug: "BUG" },
+    { data: "Desc10", bug: "BUG" },
+    { data: "DESC10", bug: "" },
+  ];
+  for (const { data, bug } of variantes) {
+    test(`CA3: El código ${data} se reconocen igual que DESC10`, async ({
+      page,
+    }) => {
+      test.fail(
+        bug != "",
+        `${bug} · El sistema solo reconoce el descuento si se usan carácteres en mayúsculas`,
+      );
+      await page.goto("/");
+      const carrito = page
+        .locator(".rounded-lg")
+        .filter({ has: page.getByRole("heading", { name: "Carrito" }) });
+      await carrito.getByPlaceholder("Código de descuento").fill(data);
+      await carrito.getByRole("button", { name: "Aplicar" }).click();
+      await expect(carrito.locator('dt:has-text("Descuento")')).toContainText(
+        "10%",
+      );
+    });
+  }
 });
 
-test.describe("US-05 · Aumentar la cantidad desde el carrito", () => {
-  test('CA2: "+" no pasa del stock (6 mochilas)', async ({ page }) => {
-    test.fail(
-      true,
-      "BUG · El sistema agrega aunque haya cantidad máxima y no muestra mensaje",
-    );
-     const tienda = new TiendaPage(page);
+test.describe("US-10 · Recibir aviso si el código no es válido", () => {
+  test("CA1: un código inexistente muestra el aviso y el total no cambia", async ({
+    page,
+  }) => {
+    const tienda = new TiendaPage(page);
     await tienda.abrir();
-
-    let aviso = "";
-    page.once("dialog", async (dialogo) => {
-      aviso = dialogo.message();
-      await dialogo.accept();
-    });
-
-    await tienda.agregar("Mochila escolar", 6);
-    
-    tienda.carrito
-      .getByRole("button", { name: `Aumentar cantidad de Mochila escolar` })
-      .click();
-
-    await expect(aviso).toContain("No puedes agregar más");
-    await expect(tienda.cantidad("Mochila escolar")).toHaveText("6");
-    // Agreguen las 6 mochilas del stock y presionen "+" en el carrito
-    // (botón con nombre accesible "Aumentar cantidad de Mochila escolar"). La cantidad debe seguir en 6.
+    await tienda.agregar("Mochila escolar", 1);
+    await tienda.aplicarCodigo("ABCDEF");
+    await expect(
+      tienda.carrito.locator('p:has-text("Código de descuento no válido")'),
+    ).toBeVisible();
+    // Nivel 1.
+    // Con 1 mochila ($ 77.350 de total), apliquen ABC123: el mensaje debe ser exactamente
+    // "Código de descuento no válido." y el total debe seguir en $ 77.350.
   });
-});
 
-test.describe("US-06 · Disminuir la cantidad desde el carrito", () => {
-  test('CA2: con cantidad 1, "−" elimina el producto', async ({
+  test("CA2: un código inválido NO borra un descuento válido ya aplicado", async ({
     page,
   }) => {
     test.fail(
       true,
-      "LBH-47 · El sistema permite reducir aunque la cantidad sea 1 y no lo borra",
+      "BUG · El sistema remueve el descuento y altera el total.",
     );
-    await page.goto("/");
-
-    let aviso = "";
-    page.once("dialog", async (dialogo) => {
-      aviso = dialogo.message();
-      await dialogo.accept();
-    });
+    page.goto("/");
 
     const tarjeta = page.locator(".rounded-lg").filter({
-      has: page.getByRole("heading", { name: "Cuaderno universitario", level: 3 }),
+      has: page.getByRole("heading", { name: "Esfero azul", level: 3 }),
     });
-
     const carrito = page
       .locator(".rounded-lg")
       .filter({ has: page.getByRole("heading", { name: "Carrito" }) });
 
-    const linea = carrito.getByRole("listitem").filter({ hasText: "Cuaderno universitario" });
-    console.log("Linea antes " + linea.locator("span"));
-  
     await tarjeta.getByRole("spinbutton").fill("1");
     await tarjeta.getByRole("button", { name: "Agregar" }).click();
-    await carrito
-      .getByRole("button", { name: "Disminuir cantidad de Cuaderno universitario" })
-      .click();
-   
-    await expect(linea).toHaveCount(0);
+
+    await carrito.getByPlaceholder("Código de descuento").fill("DESC10");
+    await carrito.getByRole("button", { name: "Aplicar" }).click();
+
+    const totalLocator = carrito.locator('dt:text-is("Total") + dd');
+    const total = await totalLocator.textContent();
+
+    await carrito.getByPlaceholder("Código de descuento").fill("ABCDEF");
+    await carrito.getByRole("button", { name: "Aplicar" }).click();
+
+    await expect(totalLocator).toHaveText(total!);
     // Nivel 2 · CAZABUGS.
-    // Agreguen 1 mochila y presionen "−" (botón "Disminuir cantidad de Mochila escolar").
-    // El criterio acepta dos salidas correctas: que se quede en 1 o que el producto se elimine.
-    // Elijan una, afírmenla y escriban en el nombre de la prueba cuál eligieron.
+    // Apliquen DESC10 (comprueben que quedó aplicado), luego apliquen ABC123. El descuento de $ 6.500 debe mantenerse.
   });
 });
 
-test.describe("US-07 · Quitar un producto del carrito", () => {
-  test("CA2: quitar el único producto deja el carrito vacío y el total en $ 0", async ({
+test.describe("US-11 · Ver el IVA correcto", () => {
+  test("CA2: con descuento, el IVA se calcula sobre el valor descontado", async ({
     page,
   }) => {
-    await page.goto("/");
-
-    let aviso = "";
-    page.once("dialog", async (dialogo) => {
-      aviso = dialogo.message();
-      await dialogo.accept();
-    });
+    test.fail(
+      true,
+      "BUG · El sistema aplica el IVA en el subtotal sin tener en cuenta el descuento.",
+    );
+    page.goto("/");
 
     const tarjeta = page.locator(".rounded-lg").filter({
-      has: page.getByRole("heading", { name: "Cuaderno universitario", level: 3 }),
+      has: page.getByRole("heading", { name: "Esfero azul", level: 3 }),
     });
-
     const carrito = page
       .locator(".rounded-lg")
       .filter({ has: page.getByRole("heading", { name: "Carrito" }) });
 
-    const linea = carrito.getByRole("listitem").filter({ hasText: "Cuaderno universitario" });
-    console.log("Linea antes " + linea.locator("span"));
-  
     await tarjeta.getByRole("spinbutton").fill("1");
     await tarjeta.getByRole("button", { name: "Agregar" }).click();
-    await carrito
-      .getByRole("button", { name: "Eliminar Cuaderno universitario" })
-      .click();
-   
-    await expect(linea).toHaveCount(0);
-    await expect(carrito.locator('dt:text-is("Subtotal") + dd')).toHaveText("$ 0");
-    // Nivel 1.
-    // Agreguen un esfero, quítenlo con el botón "Eliminar Esfero azul" y comprueben el mensaje "Tu carrito está vacío."
-    // y que la fila "Total" del carrito muestre $ 0.
+
+    await carrito.getByPlaceholder("Código de descuento").fill("DESC10");
+    await carrito.getByRole("button", { name: "Aplicar" }).click();
+
+    const IVALocator = carrito.locator('dt:text-is("IVA (19%)") + dd');
+    const subTotalLocator = await carrito.locator('dt:has-text("Subtotal") + dd').textContent();
+    const descuentoLocator = await carrito.locator('dt:has-text("Descuento") + dd').textContent();
+    const descuento = Number(descuentoLocator?.replace(/\D/g, ""));
+    const subtotal = Number(subTotalLocator?.replace(/\D/g, ""));
+    const ivaEsperado = ((subtotal - descuento) * 0.19).toLocaleString("es-CO");
+
+    await expect(IVALocator).toContainText(ivaEsperado);
+    // Nivel 3 · CAZABUGS · EL ORÁCULO.
+    // Una prueba solo sirve si sabe QUÉ debe pasar sin mirar lo que hace la app.
+    // Calculen el valor esperado EN LA PRUEBA, a partir del requisito (IVA = 19% de subtotal − descuento):
+    //   const descuento = 65000 * 0.10;  const ivaEsperado = (65000 - descuento) * 0.19;
+    // y comparen contra la fila "IVA (19%)" del carrito. Formateen el número como la tienda:
+    //   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
+    // Nunca copien el número que muestra la tienda: así la prueba daría por bueno un bug.
+  });
+});
+
+test.describe("US-12 · Ver el total a pagar correcto", () => {
+  test("CA2: con descuento, el total es subtotal − descuento + IVA (IVA sobre lo descontado)", async ({
+    page,
+  }) => {
+    test.fail(
+      true,
+      "BUG · (subtotal - descuento) + IVA con el subtotal sin descuento.",
+    );
+    page.goto("/");
+
+    const tarjeta = page.locator(".rounded-lg").filter({
+      has: page.getByRole("heading", { name: "Esfero azul", level: 3 }),
+    });
+    const carrito = page
+      .locator(".rounded-lg")
+      .filter({ has: page.getByRole("heading", { name: "Carrito" }) });
+
+    await tarjeta.getByRole("spinbutton").fill("1");
+    await tarjeta.getByRole("button", { name: "Agregar" }).click();
+
+    await carrito.getByPlaceholder("Código de descuento").fill("DESC10");
+    await carrito.getByRole("button", { name: "Aplicar" }).click();
+
+    const totalLocator = carrito.locator('dt:text-is("Total") + dd');
+    const subTotalLocator = await carrito.locator('dt:has-text("Subtotal") + dd').textContent();
+    const descuentoLocator = await carrito.locator('dt:has-text("Descuento") + dd').textContent();
+    const descuento = Number(descuentoLocator?.replace(/\D/g, ""));
+    const subtotal = Number(subTotalLocator?.replace(/\D/g, ""));
+    const IVA = (subtotal - descuento) * 0.19;
+    const totalEsperado = ((subtotal - descuento) + IVA).toLocaleString("es-CO");
+
+    await expect(totalLocator).toContainText(totalEsperado);
+    // Nivel 3 · CAZABUGS. Mismo oráculo que US-11, ahora sobre la fila "Total".
+    // Pregunta para el reporte: este bug y el de US-11 CA2, ¿son el mismo? ¿Cuántos bugs hay en Jira?
   });
 });
